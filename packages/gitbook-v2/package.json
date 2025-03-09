@@ -1,6 +1,6 @@
 {
     "name": "gitbook-v2",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "private": true,
     "dependencies": {
         "next": "^15.2.1",
@@ -14,7 +14,7 @@
     },
     "devDependencies": {
         "gitbook": "*",
-        "@opennextjs/cloudflare": "https://pkg.pr.new/opennextjs/opennextjs-cloudflare/@opennextjs/cloudflare@40fec7d",
+        "@opennextjs/cloudflare": "https://pkg.pr.new/opennextjs/opennextjs-cloudflare/@opennextjs/cloudflare@236c84d",
         "tailwindcss": "^3.4.0",
         "postcss": "^8"
     },

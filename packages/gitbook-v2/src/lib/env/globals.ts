@@ -1,3 +1,11 @@
+import 'server-only';
+
+/*
+ * Support both Cloudflare and Vercel, environment variables can be bundled.
+ * To avoid leaking them on the client-side, they should be accessed from this file
+ * and not from the `process.env` object.
+ */
+
 /**
  * Main host on which GitBook is running.
  */
@@ -14,28 +22,28 @@ export const GITBOOK_URL =
 export const GITBOOK_ASSETS_URL =
     process.env.NODE_ENV === 'development'
         ? 'http://localhost:3000'
-        : (process.env.GITBOOK_ASSETS_PREFIX ?? GITBOOK_URL);
+        : process.env.GITBOOK_ASSETS_PREFIX;
 
 /**
  * GitBook app URL.
  */
-export const GITBOOK_APP_URL = process.env.NEXT_PUBLIC_GITBOOK_APP_URL ?? 'https://app.gitbook.com';
+export const GITBOOK_APP_URL = process.env.GITBOOK_APP_URL || 'https://app.gitbook.com';
 
 /**
  * Default GitBook API URL endpoint.
  */
-export const GITBOOK_API_URL = process.env.GITBOOK_API_URL ?? 'https://api.gitbook.com';
+export const GITBOOK_API_URL = process.env.GITBOOK_API_URL || 'https://api.gitbook.com';
 
 /**
  * Default GitBook API token.
  * It can be use to avoid rate-limiting.
  */
-export const GITBOOK_API_TOKEN = process.env.GITBOOK_API_TOKEN ?? null;
+export const GITBOOK_API_TOKEN = process.env.GITBOOK_API_TOKEN || null;
 
 /**
  * User agent to use for API requests.
  */
-export const GITBOOK_USER_AGENT = process.env.GITBOOK_USER_AGENT ?? 'GitBook-Open/2.0.0';
+export const GITBOOK_USER_AGENT = process.env.GITBOOK_USER_AGENT || 'GitBook-Open/2.0.0';
 
 /**
  * Whether to disable tracking of events into site insights.
@@ -49,7 +57,7 @@ export const GITBOOK_DISABLE_TRACKING = Boolean(
  * Hostname serving the integrations.
  */
 export const GITBOOK_INTEGRATIONS_HOST =
-    process.env.GITBOOK_INTEGRATIONS_HOST ?? 'integrations.gitbook.com';
+    process.env.GITBOOK_INTEGRATIONS_HOST || 'integrations.gitbook.com';
 
 /**
  * Endpoint to use for resizing images.
@@ -58,6 +66,17 @@ export const GITBOOK_INTEGRATIONS_HOST =
 export const GITBOOK_IMAGE_RESIZE_URL = process.env.GITBOOK_IMAGE_RESIZE_URL ?? null;
 export const GITBOOK_IMAGE_RESIZE_SIGNING_KEY =
     process.env.GITBOOK_IMAGE_RESIZE_SIGNING_KEY ?? null;
+
+/**
+ * Endpoint where icons are served.
+ */
+export const GITBOOK_ICONS_URL =
+    process.env.GITBOOK_ICONS_URL || `${GITBOOK_ASSETS_URL || ''}/~gitbook/static/icons`;
+
+/**
+ * Token passed to the icons endpoint.
+ */
+export const GITBOOK_ICONS_TOKEN = process.env.GITBOOK_ICONS_TOKEN;
 
 /**
  * Secret used to validate requests from the GitBook app.
