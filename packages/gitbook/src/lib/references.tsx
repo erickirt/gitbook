@@ -147,7 +147,7 @@ export async function resolveContentRef(
 
             // Compute the text to display for the link
             if (anchor) {
-                text = `#${anchor}`;
+                text = page.title;
                 ancestors.push({
                     label: page.title,
                     icon: <PageIcon page={page} style={iconStyle} />,
@@ -155,7 +155,7 @@ export async function resolveContentRef(
                 });
 
                 if (resolveAnchorText) {
-                    const document = await getPageDocument(dataFetcher, space, page);
+                    const document = await getPageDocument(context, page);
                     if (document) {
                         const block = getBlockById(document, anchor);
                         if (block) {

@@ -21,7 +21,10 @@ export async function PageCover(props: {
     context: GitBookSiteContext;
 }) {
     const { as, page, cover, context } = props;
-    const resolved = cover.ref ? await resolveContentRef(cover.ref, context) : null;
+    const [resolved, resolvedDark] = await Promise.all([
+        cover.ref ? resolveContentRef(cover.ref, context) : null,
+        cover.refDark ? resolveContentRef(cover.refDark, context) : null,
+    ]);
 
     return (
         <div
@@ -33,14 +36,20 @@ export async function PageCover(props: {
                     ? [
                           'sm:-mx-6',
                           'md:-mx-8',
-                          '-lg:mr-8',
-                          'lg:ml-0',
+                          'lg:-mr-8',
+                          'lg:-ml-12',
                           !page.layout.tableOfContents &&
                           context.customization.header.preset !== 'none'
-                              ? 'lg:-ml-64'
+                              ? 'xl:-ml-[19rem]'
                               : null,
                       ]
-                    : ['sm:mx-auto', 'max-w-3xl', 'sm:rounded-md', 'mb-8']
+                    : [
+                          'sm:mx-auto',
+                          'max-w-3xl ',
+                          'page-full-width:max-w-screen-2xl',
+                          'sm:rounded-md',
+                          'mb-8',
+                      ]
             )}
         >
             <Image
@@ -58,6 +67,12 @@ export async function PageCover(props: {
                                   height: defaultPageCover.height,
                               },
                           },
+                    dark: resolvedDark
+                        ? {
+                              src: resolvedDark.href,
+                              size: resolvedDark.file?.dimensions,
+                          }
+                        : null,
                 }}
                 resize={
                     // When using the default cover, we don't want to resize as it's a SVG
