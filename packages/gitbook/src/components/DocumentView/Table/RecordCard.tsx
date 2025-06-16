@@ -23,18 +23,18 @@ export async function RecordCard(
     const coverFile = view.coverDefinition
         ? getRecordValue<string[]>(record[1], view.coverDefinition)?.[0]
         : null;
-    const cover =
-        coverFile && context.contentContext
-            ? await resolveContentRef({ kind: 'file', file: coverFile }, context.contentContext)
-            : null;
-
     const targetRef = view.targetDefinition
         ? (record[1].values[view.targetDefinition] as ContentRef)
         : null;
-    const target =
+
+    const [cover, target] = await Promise.all([
+        coverFile && context.contentContext
+            ? resolveContentRef({ kind: 'file', file: coverFile }, context.contentContext)
+            : null,
         targetRef && context.contentContext
-            ? await resolveContentRef(targetRef, context.contentContext)
-            : null;
+            ? resolveContentRef(targetRef, context.contentContext)
+            : null,
+    ]);
 
     const coverIsSquareOrPortrait =
         cover?.file?.dimensions &&
@@ -50,8 +50,9 @@ export async function RecordCard(
                 'w-[calc(100%+2px)]',
                 'h-[calc(100%+2px)]',
                 'inset-[-1px]',
-                'rounded-[7px]',
+                'rounded',
                 'straight-corners:rounded-none',
+                'circular-corners:rounded-xl',
                 'overflow-hidden',
                 '[&_.heading>div:first-child]:hidden',
                 '[&_.heading>div]:text-[.8em]',
@@ -147,8 +148,10 @@ export async function RecordCard(
         'grid',
         'shadow-1xs',
         'shadow-tint-9/1',
-        'rounded-md',
+        'depth-flat:shadow-none',
+        'rounded',
         'straight-corners:rounded-none',
+        'circular-corners:rounded-xl',
         'dark:shadow-transparent',
 
         'before:pointer-events-none',

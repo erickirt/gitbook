@@ -16,10 +16,9 @@ import {
 import { serveResizedImage } from '@/routes/image';
 import {
     DataFetcherError,
-    getPublishedContentByURL,
     getVisitorAuthBasePath,
+    lookupPublishedContentByUrl,
     normalizeURL,
-    resolvePublishedContentByUrl,
     throwIfDataError,
 } from '@v2/lib/data';
 import { isGitBookAssetsHostURL, isGitBookHostURL } from '@v2/lib/env';
@@ -33,15 +32,6 @@ export const config = {
 };
 
 type URLWithMode = { url: URL; mode: 'url' | 'url-host' };
-
-/**
- * Temporary list of hosts to test adaptive content using the new resolution API.
- */
-const ADAPTIVE_CONTENT_HOSTS = [
-    'docs.gitbook.com',
-    'adaptive-docs.gitbook-staging.com',
-    'enriched-content-playground.gitbook-staging.io',
-];
 
 export async function middleware(request: NextRequest) {
     try {
@@ -101,11 +91,8 @@ async function serveSiteRoutes(requestURL: URL, request: NextRequest) {
     });
 
     const withAPIToken = async (apiToken: string | null) => {
-        const resolve = ADAPTIVE_CONTENT_HOSTS.includes(siteRequestURL.hostname)
-            ? resolvePublishedContentByUrl
-            : getPublishedContentByURL;
         const siteURLData = await throwIfDataError(
-            resolve({
+            lookupPublishedContentByUrl({
                 url: siteRequestURL.toString(),
                 visitorPayload: {
                     jwtToken: visitorToken?.token ?? undefined,
@@ -226,7 +213,8 @@ async function serveSiteRoutes(requestURL: URL, request: NextRequest) {
         const customization = siteRequestURL.searchParams.get('customization');
         if (customization && validateSerializedCustomization(customization)) {
             routeType = 'dynamic';
-            requestHeaders.set(MiddlewareHeaders.Customization, customization);
+            // We need to encode the customization headers, otherwise it will fail for some customization values containing non ASCII chars on vercel.
+            requestHeaders.set(MiddlewareHeaders.Customization, encodeURIComponent(customization));
         }
         const theme = siteRequestURL.searchParams.get('theme');
         if (theme === CustomizationThemeMode.Dark || theme === CustomizationThemeMode.Light) {

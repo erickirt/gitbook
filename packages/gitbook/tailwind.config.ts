@@ -447,6 +447,13 @@ const config: Config = {
             },
         },
         opacity: opacity(),
+        screens: {
+            sm: '640px',
+            md: '768px',
+            lg: '1024px',
+            xl: '1280px',
+            '2xl': '1536px',
+        },
     },
     plugins: [
         plugin(({ addVariant }) => {
@@ -483,7 +490,10 @@ const config: Config = {
                 theme: ['theme-clean', 'theme-muted', 'theme-bold', 'theme-gradient'],
 
                 // Corner styles
-                corner: ['straight-corners'],
+                corner: ['straight-corners', 'rounded-corners', 'circular-corners'],
+
+                // Depth styles
+                depth: ['depth-flat', 'depth-subtle'],
 
                 // Link styles
                 links: ['links-default', 'links-accent'],
@@ -511,8 +521,9 @@ const config: Config = {
             /**
              * Variant when the page contains a block that will be rendered in full-width mode.
              */
+            addVariant('site-full-width', 'body:has(.site-full-width) &');
+            addVariant('site-default-width', 'body:has(.site-default-width) &');
             addVariant('page-full-width', 'body:has(.page-full-width) &');
-            addVariant('page-default-width', 'body:has(.page-default-width) &');
 
             /**
              * Variant when the page is configured to hide the table of content.

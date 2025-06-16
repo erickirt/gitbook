@@ -1,5 +1,6 @@
 import { CustomizationDefaultFont, CustomizationHeaderPreset } from '@gitbook/api';
 import { colorContrast } from '@gitbook/colors';
+import { type FontWeight, getDefaultFont } from '@gitbook/fonts';
 import { redirect } from 'next/navigation';
 import { ImageResponse } from 'next/og';
 
@@ -10,24 +11,6 @@ import { filterOutNullable } from '@/lib/typescript';
 import { getCacheTag } from '@gitbook/cache-tags';
 import type { GitBookSiteContext } from '@v2/lib/context';
 import { getResizedImageURL } from '@v2/lib/images';
-
-const googleFontsMap: { [fontName in CustomizationDefaultFont]: string } = {
-    [CustomizationDefaultFont.Inter]: 'Inter',
-    [CustomizationDefaultFont.FiraSans]: 'Fira Sans Extra Condensed',
-    [CustomizationDefaultFont.IBMPlexSerif]: 'IBM Plex Serif',
-    [CustomizationDefaultFont.Lato]: 'Lato',
-    [CustomizationDefaultFont.Merriweather]: 'Merriweather',
-    [CustomizationDefaultFont.NotoSans]: 'Noto Sans',
-    [CustomizationDefaultFont.OpenSans]: 'Open Sans',
-    [CustomizationDefaultFont.Overpass]: 'Overpass',
-    [CustomizationDefaultFont.Poppins]: 'Poppins',
-    [CustomizationDefaultFont.Raleway]: 'Raleway',
-    [CustomizationDefaultFont.Roboto]: 'Roboto',
-    [CustomizationDefaultFont.RobotoSlab]: 'Roboto Slab',
-    [CustomizationDefaultFont.SourceSansPro]: 'Source Sans 3',
-    [CustomizationDefaultFont.Ubuntu]: 'Ubuntu',
-    [CustomizationDefaultFont.ABCFavorit]: 'Inter',
-};
 
 /**
  * Render the OpenGraph image for a site content.
@@ -62,22 +45,18 @@ export async function serveOGImage(baseContext: GitBookSiteContext, params: Page
             : '';
 
     // Load the fonts
-    const { fontFamily, fonts } = await (async () => {
+    const fontLoader = async () => {
         // google fonts
         if (typeof customization.styling.font === 'string') {
-            const fontFamily = googleFontsMap[customization.styling.font] ?? 'Inter';
+            const fontFamily = customization.styling.font ?? CustomizationDefaultFont.Inter;
 
             const regularText = pageDescription;
             const boldText = `${contentTitle}${pageTitle}`;
 
             const fonts = (
                 await Promise.all([
-                    getWithCache(`google-font:${fontFamily}:400`, () =>
-                        loadGoogleFont({ fontFamily, text: regularText, weight: 400 })
-                    ),
-                    getWithCache(`google-font:${fontFamily}:700`, () =>
-                        loadGoogleFont({ fontFamily, text: boldText, weight: 700 })
-                    ),
+                    loadGoogleFont({ font: fontFamily, text: regularText, weight: 400 }),
+                    loadGoogleFont({ font: fontFamily, text: boldText, weight: 700 }),
                 ])
             ).filter(filterOutNullable);
 
@@ -106,7 +85,7 @@ export async function serveOGImage(baseContext: GitBookSiteContext, params: Page
         ).filter(filterOutNullable);
 
         return { fontFamily: 'CustomFont', fonts };
-    })();
+    };
 
     const theme = customization.themes.default;
     const useLightTheme = theme === 'light';
@@ -160,7 +139,7 @@ export async function serveOGImage(baseContext: GitBookSiteContext, params: Page
             break;
     }
 
-    const favicon = await (async () => {
+    const faviconLoader = async () => {
         if ('icon' in customization.favicon)
             return (
                 <img
@@ -185,7 +164,9 @@ export async function serveOGImage(baseContext: GitBookSiteContext, params: Page
             )
         );
         return <img src={src} alt="Icon" width={40} height={40} tw="mr-4" />;
-    })();
+    };
+
+    const [favicon, { fontFamily, fonts }] = await Promise.all([faviconLoader(), fontLoader()]);
 
     return new ImageResponse(
         <div
@@ -260,37 +241,31 @@ export async function serveOGImage(baseContext: GitBookSiteContext, params: Page
     );
 }
 
-async function loadGoogleFont(input: { fontFamily: string; text: string; weight: 400 | 700 }) {
-    const { fontFamily, text, weight } = input;
+async function loadGoogleFont(input: {
+    font: CustomizationDefaultFont;
+    text: string;
+    weight: FontWeight;
+}) {
+    const lookup = getDefaultFont({
+        font: input.font,
+        text: input.text,
+        weight: input.weight,
+    });
 
-    if (!text.trim()) {
-        return null;
-    }
-
-    const url = new URL('https://fonts.googleapis.com/css2');
-    url.searchParams.set('family', `${fontFamily}:wght@${weight}`);
-    url.searchParams.set('text', text);
-
-    const result = await fetch(url.href);
-    if (!result.ok) {
-        return null;
-    }
-
-    const css = await result.text();
-    const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/);
-    const resourceUrl = resource ? resource[1] : null;
-
-    if (resourceUrl) {
-        const response = await fetch(resourceUrl);
-        if (response.ok) {
-            const data = await response.arrayBuffer();
-            return {
-                name: fontFamily,
-                data,
-                style: 'normal' as const,
-                weight,
-            };
-        }
+    // If we found a font file, load it
+    if (lookup) {
+        return getWithCache(`google-font-files:${lookup.url}`, async () => {
+            const response = await fetch(lookup.url);
+            if (response.ok) {
+                const data = await response.arrayBuffer();
+                return {
+                    name: lookup.font,
+                    data,
+                    style: 'normal' as const,
+                    weight: input.weight,
+                };
+            }
+        });
     }
 
     // If for some reason we can't load the font, we'll just use the default one
