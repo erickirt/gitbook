@@ -49,23 +49,38 @@ class GitbookIncrementalCache implements IncrementalCache {
                     const localCacheEntry = await localCache.match(this.getCacheUrlKey(cacheKey));
                     if (localCacheEntry) {
                         span.setAttribute('cacheHit', 'local');
-                        return localCacheEntry.json();
+                        const result = (await localCacheEntry.json()) as WithLastModified<
+                            CacheValue<CacheType>
+                        >;
+                        return this.returnNullOn404(result);
                     }
 
                     const r2Object = await r2.get(cacheKey);
                     if (!r2Object) return null;
 
                     span.setAttribute('cacheHit', 'r2');
-                    return {
+                    return this.returnNullOn404({
                         value: await r2Object.json(),
                         lastModified: r2Object.uploaded.getTime(),
-                    };
+                    });
                 } catch (e) {
                     console.error('Failed to get from cache', e);
                     return null;
                 }
             }
         );
+    }
+
+    //TODO: This is a workaround to handle 404 responses in the cache.
+    // It should be handled by OpenNext cache interception directly. This should be removed once OpenNext cache interception is fixed.
+    returnNullOn404<CacheType extends CacheEntryType = 'cache'>(
+        cacheEntry: WithLastModified<CacheValue<CacheType>> | null
+    ): WithLastModified<CacheValue<CacheType>> | null {
+        if (!cacheEntry?.value) return null;
+        if ('meta' in cacheEntry.value && cacheEntry.value.meta?.status === 404) {
+            return null;
+        }
+        return cacheEntry;
     }
 
     async set<CacheType extends CacheEntryType = 'cache'>(
@@ -168,7 +183,14 @@ class GitbookIncrementalCache implements IncrementalCache {
     }
 
     // Utility function to generate keys for R2/Cache API
-    getR2Key(key: string, cacheType: CacheEntryType = 'cache'): string {
+    getR2Key(initialKey: string, cacheType: CacheEntryType = 'cache'): string {
+        let key = initialKey;
+        if (cacheType === 'composable') {
+            // For composable cache, we need to discard the build ID from the key
+            const [_buildId, ...restOfTheKey] = JSON.parse(initialKey);
+            key = JSON.stringify([...restOfTheKey]);
+        }
+
         const hash = createHash('sha256').update(key).digest('hex');
         return `${DEFAULT_PREFIX}/${cacheType === 'cache' ? process.env?.NEXT_BUILD_ID : 'dataCache'}/${hash}.${cacheType}`.replace(
             /\/+/g,

@@ -3,6 +3,7 @@ import {
     CustomizationBackground,
     CustomizationCorners,
     CustomizationDefaultFont,
+    CustomizationDepth,
     type CustomizationHeaderItem,
     CustomizationHeaderPreset,
     CustomizationIconsStyle,
@@ -278,6 +279,7 @@ export function getCustomizationURL(partial: DeepPartial<SiteCustomizationSettin
             dangerColor: { light: '#FB2C36', dark: '#FB2C36' },
             successColor: { light: '#00C950', dark: '#00C950' },
             corners: CustomizationCorners.Rounded,
+            depth: CustomizationDepth.Subtle,
             font: CustomizationDefaultFont.Inter,
             background: CustomizationBackground.Plain,
             icons: CustomizationIconsStyle.Regular,
@@ -344,7 +346,7 @@ export function getCustomizationURL(partial: DeepPartial<SiteCustomizationSettin
 /**
  * Wait for all icons present on the page to be loaded.
  */
-async function waitForIcons(page: Page) {
+export async function waitForIcons(page: Page) {
     await page.waitForFunction(() => {
         const urlStates: Record<
             string,

@@ -4,7 +4,7 @@ import React from 'react';
 
 import { getSpaceLanguage } from '@/intl/server';
 import { t } from '@/intl/translate';
-import { hasFullWidthBlock, isNodeEmpty } from '@/lib/document';
+import { hasFullWidthBlock, hasMoreThan, isNodeEmpty } from '@/lib/document';
 import type { AncestorRevisionPage } from '@/lib/pages';
 import { tcls } from '@/lib/tailwind';
 import { DocumentView, DocumentViewSkeleton } from '../DocumentView';
@@ -17,6 +17,8 @@ import { PageFooterNavigation } from './PageFooterNavigation';
 import { PageHeader } from './PageHeader';
 import { PreservePageLayout } from './PreservePageLayout';
 
+const LINK_PREVIEW_MAX_COUNT = 100;
+
 export function PageBody(props: {
     context: GitBookSiteContext;
     page: RevisionPageDocument;
@@ -27,7 +29,18 @@ export function PageBody(props: {
     const { page, context, ancestors, document, withPageFeedback } = props;
     const { customization } = context;
 
-    const asFullWidth = document ? hasFullWidthBlock(document) : false;
+    const contentFullWidth = document ? hasFullWidthBlock(document) : false;
+
+    // Render link previews only if there are less than LINK_PREVIEW_MAX_COUNT links in the document.
+    const shouldRenderLinkPreviews = document
+        ? !hasMoreThan(
+              document,
+              (inline) => inline.object === 'inline' && inline.type === 'link',
+              LINK_PREVIEW_MAX_COUNT
+          )
+        : false;
+    const pageFullWidth = page.id === 'wtthNFMqmEQmnt5LKR0q';
+    const asFullWidth = pageFullWidth || contentFullWidth;
     const language = getSpaceLanguage(customization);
     const updatedAt = page.updatedAt ?? page.createdAt;
 
@@ -36,15 +49,11 @@ export function PageBody(props: {
             <main
                 className={tcls(
                     'relative min-w-0 flex-1',
-                    'py-8 lg:px-12',
+                    'mx-auto max-w-screen-2xl py-8',
                     // Allow words to break if they are too long.
                     'break-anywhere',
-                    // When in api page mode without the aside, we align with the border of the main content
-                    'page-api-block:xl:max-2xl:pr-0',
-                    // Max size to ensure one column in api is aligned with rest of content (2 x 3xl) + (gap-3 + 2) * px-12
-                    'page-api-block:mx-auto page-api-block:max-w-screen-2xl',
-                    // page.layout.tableOfContents ? null : 'xl:ml-56',
-                    asFullWidth ? 'page-full-width' : 'page-default-width',
+                    pageFullWidth ? 'page-full-width 2xl:px-8' : 'page-default-width',
+                    asFullWidth ? 'site-full-width' : 'site-default-width',
                     page.layout.tableOfContents ? 'page-has-toc' : 'page-no-toc'
                 )}
             >
@@ -70,6 +79,7 @@ export function PageBody(props: {
                             context={{
                                 mode: 'default',
                                 contentContext: context,
+                                shouldRenderLinkPreviews,
                             }}
                         />
                     </React.Suspense>
@@ -81,7 +91,7 @@ export function PageBody(props: {
                     <PageFooterNavigation context={context} page={page} />
                 ) : null}
 
-                <div className="mx-auto mt-6 page-api-block:ml-0 flex max-w-3xl flex-row flex-wrap items-center gap-4 text-tint contrast-more:text-tint-strong">
+                <div className="mx-auto mt-6 page-api-block:ml-0 flex max-w-3xl page-full-width:max-w-screen-2xl flex-row flex-wrap items-center gap-4 text-tint contrast-more:text-tint-strong">
                     {updatedAt ? (
                         <p className="mr-auto text-sm">
                             {t(language, 'page_last_modified', <DateRelative value={updatedAt} />)}

@@ -104,11 +104,9 @@ export function Header(props: { context: GitBookSiteContext; withTopHeader?: boo
                                           'lg:basis-40',
                                           'md:max-w-[40%]',
                                           'lg:max-w-lg',
-                                          'lg:ml-[max(calc((100%-18rem-48rem-3rem)/2),1.5rem)]', // container (100%) - sidebar (18rem) - content (48rem) - margin (3rem)
+                                          'lg:ml-[max(calc((100%-18rem-48rem)/2),1.5rem)]', // container (100%) - sidebar (18rem) - content (48rem)
                                           'xl:ml-[max(calc((100%-18rem-48rem-14rem-3rem)/2),1.5rem)]', // container (100%) - sidebar (18rem) - content (48rem) - outline (14rem) - margin (3rem)
                                           'page-no-toc:lg:ml-[max(calc((100%-18rem-48rem-18rem-3rem)/2),0rem)]',
-                                          'page-full-width:lg:ml-[max(calc((100%-18rem-103rem-3rem)/2),1.5rem)]',
-                                          'page-full-width:2xl:ml-[max(calc((100%-18rem-96rem-14rem+3rem)/2),1.5rem)]',
                                           'md:mr-auto',
                                           'order-last',
                                           'md:order-[unset]',
@@ -185,9 +183,8 @@ export function Header(props: { context: GitBookSiteContext; withTopHeader?: boo
                     <div
                         className={tcls(
                             'w-full',
-                            'overflow-x-scroll',
-                            'overflow-y-hidden',
-                            'hide-scroll',
+                            'overflow-x-auto',
+                            'no-scrollbar',
                             '-mb-4 pb-4', // Positive padding / negative margin allows the navigation menu indicator to show in a scroll viewƒ
                             !sections ? ['hidden', 'page-no-toc:flex'] : 'flex'
                         )}
@@ -195,7 +192,6 @@ export function Header(props: { context: GitBookSiteContext; withTopHeader?: boo
                         <div
                             className={tcls(
                                 CONTAINER_STYLE,
-                                'page-default-width:max-w-[unset]',
                                 'grow',
                                 'flex',
                                 'items-end',
@@ -205,7 +201,7 @@ export function Header(props: { context: GitBookSiteContext; withTopHeader?: boo
                             {siteSpaces.length > 1 && (
                                 <div
                                     id="variants"
-                                    className="my-2 mr-5 page-no-toc:flex hidden grow border-tint border-r pr-5 *:grow only:mr-0 only:border-none only:pr-0 sm:max-w-64"
+                                    className="my-2 mr-5 grow border-tint border-r pr-5 *:grow only:mr-0 only:border-none only:pr-0 sm:max-w-64"
                                 >
                                     <SpacesDropdown
                                         context={context}

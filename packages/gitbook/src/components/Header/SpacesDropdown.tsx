@@ -1,11 +1,10 @@
 import type { SiteSpace } from '@gitbook/api';
 
+import { getSiteSpaceURL } from '@/lib/sites';
 import { tcls } from '@/lib/tailwind';
-
-import { joinPath } from '@/lib/paths';
 import type { GitBookSiteContext } from '@v2/lib/context';
 import { DropdownChevron, DropdownMenu } from './DropdownMenu';
-import { SpacesDropdownMenuItem } from './SpacesDropdownMenuItem';
+import { SpacesDropdownMenuItems } from './SpacesDropdownMenuItem';
 
 export function SpacesDropdown(props: {
     context: GitBookSiteContext;
@@ -14,7 +13,6 @@ export function SpacesDropdown(props: {
     className?: string;
 }) {
     const { context, siteSpace, siteSpaces, className } = props;
-    const { linker } = context;
 
     return (
         <DropdownMenu
@@ -62,35 +60,20 @@ export function SpacesDropdown(props: {
                         className
                     )}
                 >
-                    <span className={tcls('line-clamp-1', 'grow')}>{siteSpace.title}</span>
+                    <span className={tcls('truncate', 'grow')}>{siteSpace.title}</span>
                     <DropdownChevron />
                 </div>
             }
         >
-            {siteSpaces.map((otherSiteSpace, index) => (
-                <SpacesDropdownMenuItem
-                    key={`${otherSiteSpace.id}-${index}`}
-                    variantSpace={{
-                        id: otherSiteSpace.id,
-                        title: otherSiteSpace.title,
-                        url: otherSiteSpace.urls.published
-                            ? linker.toLinkForContent(otherSiteSpace.urls.published)
-                            : getFallbackSiteSpaceURL(otherSiteSpace, context),
-                    }}
-                    active={otherSiteSpace.id === siteSpace.id}
-                />
-            ))}
+            <SpacesDropdownMenuItems
+                slimSpaces={siteSpaces.map((space) => ({
+                    id: space.id,
+                    title: space.title,
+                    url: getSiteSpaceURL(context, space),
+                    isActive: space.id === siteSpace.id,
+                }))}
+                curPath={siteSpace.path}
+            />
         </DropdownMenu>
-    );
-}
-
-/**
- * When the site is not published yet, `urls.published` is not available.
- * To ensure navigation works in preview, we compute a relative URL from the siteSpace path.
- */
-function getFallbackSiteSpaceURL(siteSpace: SiteSpace, context: GitBookSiteContext) {
-    const { linker, sections } = context;
-    return linker.toPathInSite(
-        sections?.current ? joinPath(sections.current.path, siteSpace.path) : siteSpace.path
     );
 }

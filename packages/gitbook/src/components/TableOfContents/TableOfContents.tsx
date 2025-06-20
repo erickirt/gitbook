@@ -35,6 +35,7 @@ export function TableOfContents(props: {
                     'relative',
                     'z-[1]',
                     'lg:sticky',
+                    'lg:mr-12',
 
                     // Server-side static positioning
                     'lg:top-0',
@@ -84,9 +85,11 @@ export function TableOfContents(props: {
                         '[html.sidebar-filled.theme-bold.tint_&]:bg-tint-base',
                         '[html.sidebar-filled.theme-gradient_&]:border',
                         'page-no-toc:!bg-transparent',
+                        'page-no-toc:!border-none',
 
                         'sidebar-filled:rounded-xl',
-                        'straight-corners:rounded-none'
+                        'straight-corners:rounded-none',
+                        '[html.sidebar-filled.circular-corners_&]:page-has-toc:rounded-3xl'
                     )}
                 >
                     {innerHeader && <div className="px-5 *:my-4">{innerHeader}</div>}

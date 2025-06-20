@@ -6,6 +6,7 @@ import { type ClassValue, tcls } from '@/lib/tailwind';
 
 import { Icon, type IconName } from '@gitbook/icons';
 import { Link, type LinkInsightsProps } from './Link';
+import { useClassnames } from './StyleProvider';
 
 type ButtonProps = {
     href?: string;
@@ -18,7 +19,7 @@ type ButtonProps = {
 } & LinkInsightsProps &
     HTMLAttributes<HTMLElement>;
 
-const variantClasses = {
+export const variantClasses = {
     primary: [
         'bg-primary-solid',
         'text-contrast-primary-solid',
@@ -40,8 +41,10 @@ const variantClasses = {
     ],
     secondary: [
         'bg-tint',
+        'depth-flat:bg-transparent',
         'text-tint',
         'hover:bg-tint-hover',
+        'depth-flat:hover:bg-tint-hover',
         'hover:text-primary',
         'contrast-more:bg-tint-subtle',
     ],
@@ -60,53 +63,22 @@ export function Button({
     ...rest
 }: ButtonProps & { target?: HTMLAttributeAnchorTarget }) {
     const sizes = {
-        default: ['text-base', 'px-4', 'py-2'],
-        medium: ['text-sm', 'px-3', 'py-1.5'],
+        default: ['text-base', 'font-semibold', 'px-5', 'py-2', 'circular-corners:px-6'],
+        medium: ['text-sm', 'px-3.5', 'py-1.5', 'circular-corners:px-4'],
         small: ['text-xs', 'py-2', iconOnly ? 'px-2' : 'px-3'],
     };
 
     const sizeClasses = sizes[size] || sizes.default;
 
-    const domClassName = tcls(
-        'button',
-        'inline-flex',
-        'items-center',
-        'gap-2',
-        'rounded-md',
-        'straight-corners:rounded-none',
-        // 'place-self-start',
-
-        'ring-1',
-        'ring-tint',
-        'hover:ring-tint-hover',
-
-        'shadow-sm',
-        'shadow-tint',
-        'dark:shadow-tint-1',
-        'hover:shadow-md',
-        'active:shadow-none',
-
-        'contrast-more:ring-tint-12',
-        'contrast-more:hover:ring-2',
-        'contrast-more:hover:ring-tint-12',
-
-        'hover:scale-104',
-        'active:scale-100',
-        'transition-all',
-
-        'grow-0',
-        'shrink-0',
-        'truncate',
-        variantClasses[variant],
-        sizeClasses,
-        className
-    );
+    const domClassName = tcls(variantClasses[variant], sizeClasses, className);
+    const buttonOnlyClassNames = useClassnames(['ButtonStyles']);
 
     if (href) {
         return (
             <Link
                 href={href}
                 className={domClassName}
+                classNames={['ButtonStyles']}
                 insights={insights}
                 aria-label={label}
                 target={target}
@@ -119,7 +91,12 @@ export function Button({
     }
 
     return (
-        <button type="button" className={domClassName} aria-label={label} {...rest}>
+        <button
+            type="button"
+            className={tcls(domClassName, buttonOnlyClassNames)}
+            aria-label={label}
+            {...rest}
+        >
             {icon ? <Icon icon={icon} className={tcls('size-[1em]')} /> : null}
             {iconOnly ? null : label}
         </button>

@@ -7,7 +7,8 @@ import { tcls } from '@/lib/tailwind';
 import { type CustomizationAnnouncement, SiteInsightsLinkPosition } from '@gitbook/api';
 import { Icon, type IconName } from '@gitbook/icons';
 import { CONTAINER_STYLE } from '../layout';
-import { Link, linkStyles } from '../primitives';
+import { Link } from '../primitives';
+import { LinkStyles } from '../primitives/styles';
 import { ANNOUNCEMENT_CSS_CLASS, ANNOUNCEMENT_STORAGE_KEY } from './constants';
 
 /**
@@ -34,7 +35,7 @@ export function AnnouncementBanner(props: {
                     <Tag
                         href={contentRef?.href ?? ''}
                         className={tcls(
-                            'flex w-full items-start justify-center overflow-hidden rounded-md straight-corners:rounded-none px-4 py-3 text-neutral-strong text-sm theme-bold:ring-1 theme-gradient:ring-1 ring-inset transition-colors',
+                            'flex w-full items-start justify-center overflow-hidden circular-corners:rounded-xl rounded-md straight-corners:rounded-none px-4 py-3 text-neutral-strong text-sm theme-bold:ring-1 theme-gradient:ring-1 ring-inset transition-colors',
                             style.container,
                             closeable && 'pr-12',
                             hasLink && style.hover
@@ -58,7 +59,7 @@ export function AnnouncementBanner(props: {
                         <div>
                             {announcement.message}
                             {hasLink ? (
-                                <div className={tcls(linkStyles, style.link, 'ml-1 inline')}>
+                                <div className={tcls(LinkStyles, style.link, 'ml-1 inline')}>
                                     {contentRef?.icon ? (
                                         <span className="mr-1 ml-2 *:inline">
                                             {contentRef?.icon}
@@ -81,7 +82,7 @@ export function AnnouncementBanner(props: {
                     </Tag>
                     {closeable ? (
                         <button
-                            className={`absolute top-0 right-4 mt-2 mr-2 rounded straight-corners:rounded-none p-1.5 transition-all hover:ring-1 sm:right-6 md:right-8 ${style.close}`}
+                            className={`absolute top-0 right-4 mt-2 mr-2 rounded circular-corners:rounded-lg straight-corners:rounded-none p-1.5 transition-all hover:ring-1 sm:right-6 md:right-8 ${style.close}`}
                             type="button"
                             onClick={dismissAnnouncement}
                             title={tString(language, 'close')}

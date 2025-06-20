@@ -66,17 +66,14 @@ export const SearchSectionResultItem = React.forwardRef(function SearchSectionRe
                         <HighlightQuery query={query} text={item.title} />
                     </p>
                 ) : null}
-                {item.body ? (
-                    <p className={tcls('text-sm', 'line-clamp-3', 'relative')}>
-                        <HighlightQuery query={query} text={item.body} />
-                    </p>
-                ) : null}
+                {item.body ? highlightQueryInBody(item.body, query) : null}
             </div>
             <div
                 className={tcls(
                     'p-2',
                     'rounded',
                     'straight-corners:rounded-none',
+                    'circular-corners:rounded-full',
                     'bg-primary-solid',
                     'text-contrast-primary-solid',
                     'hidden',
@@ -89,3 +86,14 @@ export const SearchSectionResultItem = React.forwardRef(function SearchSectionRe
         </Link>
     );
 });
+
+function highlightQueryInBody(body: string, query: string) {
+    const idx = body.toLocaleLowerCase().indexOf(query.toLocaleLowerCase());
+
+    // Ensure the query to be highlighted is visible in the body.
+    return (
+        <p className={tcls('text-sm', 'line-clamp-3', 'relative')}>
+            <HighlightQuery query={query} text={idx < 20 ? body : `...${body.slice(idx - 10)}`} />
+        </p>
+    );
+}
