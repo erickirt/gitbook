@@ -1,5 +1,11 @@
 # @gitbook/react-openapi
 
+## 1.5.11
+
+### Patch Changes
+
+- 9dd2db6: Support x-gitbook-token-placeholder as TryIt prefill fallback for HTTP auth (basic and bearer)
+
 ## 1.5.10
 
 ### Patch Changes
