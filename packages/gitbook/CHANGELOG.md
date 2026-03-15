@@ -1,5 +1,15 @@
 # gitbook
 
+## 0.22.4
+
+### Patch Changes
+
+- 3ce7e52: Fix Variant dropdown not showing in GitBook embed
+- 4787b7e: Use localized titles/descriptions for site entities
+- 7ab6351: Import site redirect patterns from @gitbook/api
+- Updated dependencies [9dd2db6]
+  - @gitbook/react-openapi@1.5.11
+
 ## 0.22.3
 
 ### Patch Changes
